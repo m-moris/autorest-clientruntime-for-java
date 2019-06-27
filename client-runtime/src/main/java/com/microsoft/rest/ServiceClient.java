@@ -8,6 +8,7 @@ package com.microsoft.rest;
 
 import com.microsoft.rest.protocol.SerializerAdapter;
 import com.microsoft.rest.serializer.JacksonAdapter;
+import com.microsoft.rest.credentials.ServiceClientCredentials;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 
@@ -32,6 +33,16 @@ public abstract class ServiceClient {
     /**
      * Initializes a new instance of the ServiceClient class.
      *
+     * @param baseUrl the service endpoint
+     * @param credentials the credentials for accessing rest service
+     */
+    protected ServiceClient(String baseUrl, ServiceClientCredentials credentials) {
+        this(baseUrl, credentials, new OkHttpClient.Builder(), new Retrofit.Builder());
+    }
+
+    /**
+     * Initializes a new instance of the ServiceClient class.
+     *
      * @param baseUrl the service base uri
      * @param clientBuilder the http client builder
      * @param restBuilder the retrofit rest client builder
@@ -39,6 +50,23 @@ public abstract class ServiceClient {
     protected ServiceClient(String baseUrl, OkHttpClient.Builder clientBuilder, Retrofit.Builder restBuilder) {
         this(new RestClient.Builder(clientBuilder, restBuilder)
                 .withBaseUrl(baseUrl)
+                .withResponseBuilderFactory(new ServiceResponseBuilder.Factory())
+                .withSerializerAdapter(new JacksonAdapter())
+                .build());
+    }
+
+    /**
+     * Initializes a new instance of the ServiceClient class.
+     *
+     * @param baseUrl the service base uri
+     * @param credentials ths credentials for accessing rest service
+     * @param clientBuilder the http client builder
+     * @param restBuilder the retrofit rest client builder
+     */
+    protected ServiceClient(String baseUrl, ServiceClientCredentials credentials, OkHttpClient.Builder clientBuilder, Retrofit.Builder restBuilder) {
+        this(new RestClient.Builder(clientBuilder, restBuilder)
+                .withBaseUrl(baseUrl)
+                .withCredentials(credentials)
                 .withResponseBuilderFactory(new ServiceResponseBuilder.Factory())
                 .withSerializerAdapter(new JacksonAdapter())
                 .build());
